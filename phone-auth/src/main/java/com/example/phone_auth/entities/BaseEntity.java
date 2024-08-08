@@ -3,7 +3,7 @@ package com.example.phone_auth.entities;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @MappedSuperclass

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Service
 public class OtpService {
@@ -21,6 +22,8 @@ public class OtpService {
 
     public String generateOtp(String phoneNumber) throws ApiException {
         phoneNumber = phoneNumber.trim();
+        if (!isValidPhoneNumber(phoneNumber)) throw  new ApiException("Invalid phone number format.");
+
 
         OtpEntity otpEntity = otpRepository.findByPhoneNumber(phoneNumber);
         if(Objects.nonNull(otpEntity) && otpEntity.getUpdatedAt().isAfter(LocalDateTime.now().minusMinutes(OTPUtils.regenerationTimeThreshold)))
@@ -32,16 +35,16 @@ public class OtpService {
         String otp = OTPUtils.generateOTP();
         otpEntity.setPhoneNumber(phoneNumber);
         otpEntity.setHashCode(OTPUtils.computeSHA256(otp));
-//        otpRepository.save(otpEntity);
+        otpRepository.save(otpEntity);
         sendOtp(phoneNumber, otp);
         return otp;
     }
 
     public boolean validateOtp(String phoneNumber, String otp) throws ApiException {
         phoneNumber = phoneNumber.trim();
-        OtpEntity otpEntity = otpRepository.findById(phoneNumber).orElse(null);
-        if(otp.trim().length()==0)  return false;
+        if (!isValidOtp(otp)) return false;
 
+        OtpEntity otpEntity = otpRepository.findById(phoneNumber).orElse(null);
         if (otpEntity == null) throw new ApiException("otp is either expired or not generated for the given phoneNumber");
 
         if(!otpEntity.getHashCode().equals(OTPUtils.computeSHA256(otp))) return false;
@@ -59,8 +62,16 @@ public class OtpService {
     }
 
     // Scheduled cleanup task
+
     @Scheduled(fixedRate = 5*60000) // Run every 5 minute
     public void cleanupExpiredOtps() {
         otpRepository.deleteAll(otpRepository.findByCreatedAtBefore(LocalDateTime.now().minusMinutes(5)));
+    }
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        return Pattern.compile("^\\+?[1-9]\\d{1,14}$").matcher(phoneNumber).matches();
+    }
+
+    private boolean isValidOtp(String otp) {
+        return Pattern.compile("^\\d{6}$").matcher(otp).matches();
     }
 }
