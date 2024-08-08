@@ -6,6 +6,7 @@ import java.util.Random;
 
 public class OTPUtils {
     private static final Random random = new Random();
+    public static final long regenerationTimeThreshold = 1;   // the time after which the otp can regenerate for the given number
 
     // Generate a random OTP
     public static String generateOTP() {

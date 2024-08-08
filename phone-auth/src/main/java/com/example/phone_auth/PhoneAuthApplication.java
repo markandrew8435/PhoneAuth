@@ -8,9 +8,6 @@ import java.util.Properties;
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.example.phone_auth.repository")
 public class PhoneAuthApplication {
-
-
-
 	public static void main(String[] args) {
 		SpringApplication.run(PhoneAuthApplication.class, args);
 	}

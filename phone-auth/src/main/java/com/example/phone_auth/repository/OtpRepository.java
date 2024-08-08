@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface OtpRepository extends JpaRepository<OtpEntity, String> {
     List<OtpEntity> findByCreatedAtBefore(LocalDateTime dateTime);
+
+    OtpEntity findByPhoneNumber(String phoneNumber);
 }
